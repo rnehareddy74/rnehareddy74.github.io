@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title id="page-title">Your Name — Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --border: #e2e0da;
+      --text: #18181b;
+      --muted: #6b6b6f;
+      --faint: #f0efe9;
+      --accent: #1a56db;
+      --accent-lt: #eef2ff;
+      --green: #065f46;
+      --green-lt: #ecfdf5;
+      --font-head: 'Fraunces', serif;
+      --font-body: 'Instrument Sans', sans-serif;
+      --ease: cubic-bezier(.16,1,.3,1);
+      --r: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    /* EDIT MODE BANNER */
+    #edit-banner {
+      background: var(--accent);
+      color: #fff;
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    #edit-banner button {
+      background: #fff;
+      color: var(--accent);
+      border: none;
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+    #edit-banner button:hover { background: #e8eeff; }
+    #save-btn { background: #fff; color: #065f46 !important; }
+
+    /* NAV */
+    nav {
+      background: rgba(247,246,243,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 58px;
+      position: sticky;
+      top: 40px;
+      z-index: 100;
+    }
+    .nav-logo { font-family: var(--font-head); font-size: 22px; font-weight: 700; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { font-size: 13px; font-weight: 500; color: var(--muted); transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--text) !important;
+      color: #fff !important;
+      padding: 7px 18px;
+      border-radius: 7px;
+      font-size: 13px !important;
+      transition: opacity .15s !important;
+    }
+    .nav-cta:hover { opacity: .8 !important; }
+
+    /* LAYOUT */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 48px; }
+
+    /* HERO */
+    #hero { padding: 80px 48px 72px; max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 180px; gap: 48px; align-items: start; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--green-lt); color: var(--green);
+      font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      padding: 5px 13px; border-radius: 100px; margin-bottom: 20px;
+    }
+    .hero-badge::before { content: ''; width: 7px; height: 7px; background: #10b981; border-radius: 50%; }
+    h1 { font-family: var(--font-head); font-size: clamp(44px,7vw,72px); font-weight: 900; line-height: 1.0; letter-spacing: -1px; margin-bottom: 20px; }
+    .hero-bio { font-size: 16px; color: var(--muted); line-height: 1.85; margin-bottom: 32px; max-width: 460px; }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 22px; font-family: var(--font-body); font-size: 14px; font-weight: 500; border-radius: 8px; transition: all .15s; cursor: pointer; border: none; }
+    .btn-solid { background: var(--text); color: #fff; }
+    .btn-solid:hover { background: #333; }
+    .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover { border-color: #aaa; color: var(--text); }
+
+    /* PHOTO */
+    .photo-wrap {
+      width: 160px; height: 160px; border-radius: 14px;
+      overflow: hidden; border: 1px solid var(--border);
+      background: var(--faint);
+      position: relative; cursor: pointer;
+      flex-shrink: 0;
+    }
+    .photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; color: var(--muted); font-size: 12px; text-align: center; padding: 12px;
+    }
+    .photo-placeholder svg { width: 32px; height: 32px; opacity: .4; }
+    .photo-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .2s;
+      color: #fff; font-size: 12px; font-weight: 500; text-align: center; padding: 8px;
+    }
+    .photo-wrap:hover .photo-overlay { opacity: 1; }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 56px 0; }
+    .stat-cell { padding: 24px 28px; border-right: 1px solid var(--border); }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num { font-family: var(--font-head); font-size: 34px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--muted); }
+
+    hr.div { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* SECTION */
+    .section { padding: 72px 0; }
+    .sec-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .sec-title { font-family: var(--font-head); font-size: clamp(28px,4vw,40px); font-weight: 900; letter-spacing: -.5px; margin-bottom: 44px; }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 5fr 4fr; gap: 56px; align-items: start; }
+    .about-text { color: var(--muted); font-size: 15px; line-height: 1.9; }
+    .about-text p+p { margin-top: 12px; }
+    .about-text strong { color: var(--text); font-weight: 600; }
+    .skills-group-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; margin-top: 22px; }
+    .skills-group-label:first-child { margin-top: 0; }
+    .skills-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .skill { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 6px; background: var(--faint); color: var(--text); border: 1px solid var(--border); }
+
+    /* PROJECTS */
+    .card-list { display: flex; flex-direction: column; gap: 10px; }
+    .project-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 28px 32px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .project-card:hover { border-color: #bbb; box-shadow: 0 2px 14px rgba(0,0,0,.06); }
+    .card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .card-idx { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: .1em; }
+    .status-badge { font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 100px; background: var(--green-lt); color: var(--green); }
+    .status-wip { background: #eff6ff; color: #1e40af; }
+    .card-name { font-size: 17px; font-weight: 600; letter-spacing: -.2px; margin-bottom: 7px; }
+    .card-desc { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 500px; }
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+    .tag { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 5px; background: var(--accent-lt); color: var(--accent); }
+    .card-links { display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+    .icon-link {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border: 1px solid var(--border); border-radius: 7px;
+      font-size: 12px; font-weight: 500; color: var(--muted); background: var(--surface);
+      white-space: nowrap; transition: all .15s;
+    }
+    .icon-link:hover { border-color: #aaa; color: var(--text); }
+    .icon-link svg { width: 13px; height: 13px; }
+
+    /* BLOGS */
+    .blog-list { display: flex; flex-direction: column; gap: 10px; }
+    .blog-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 22px 28px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
+      transition: all .15s;
+    }
+    .blog-card:hover { border-color: #bbb; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+    .blog-date { font-size: 11px; font-weight: 500; letter-spacing: .06em; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+    .blog-title { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+    .blog-desc { font-size: 13px; color: var(--muted); }
+    .blog-read { font-size: 12px; font-weight: 500; color: var(--accent); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+    .blog-read svg { width: 13px; height: 13px; }
+
+    /* CONTRIBUTIONS */
+    .contrib-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+    .contrib-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 22px 24px; transition: all .15s;
+    }
+    .contrib-card:hover { border-color: #bbb; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+    .contrib-type {
+      display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 100px; margin-bottom: 12px;
+    }
+    .type-patent { background: #fef3c7; color: #92400e; }
+    .type-oss { background: var(--green-lt); color: var(--green); }
+    .type-spec { background: var(--accent-lt); color: #1e40af; }
+    .contrib-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .contrib-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .contrib-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 12px; font-size: 12px; font-weight: 500; color: var(--accent); }
+    .contrib-link svg { width: 12px; height: 12px; }
+
+    /* CONTACT */
+    .contact-card { background: var(--text); border-radius: 16px; padding: 64px; text-align: center; }
+    .contact-card .sec-eyebrow { color: #818cf8; }
+    .contact-card .sec-title { color: #fff; margin-bottom: 12px; }
+    .contact-sub { color: rgba(255,255,255,.5); font-size: 15px; margin-bottom: 36px; }
+    .contact-links { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .contact-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,.75);
+      transition: all .15s;
+    }
+    .contact-link:hover { border-color: rgba(255,255,255,.4); color: #fff; }
+    .contact-link svg { width: 14px; height: 14px; }
+
+    footer { border-top: 1px solid var(--border); padding: 20px 48px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+
+    /* EDITABLE FIELDS */
+    [contenteditable="true"] {
+      outline: none;
+      border-radius: 4px;
+      transition: background .15s, box-shadow .15s;
+    }
+    [contenteditable="true"]:hover { background: rgba(26,86,219,.05); }
+    [contenteditable="true"]:focus { background: rgba(26,86,219,.07); box-shadow: 0 0 0 2px rgba(26,86,219,.25); }
+
+    /* EDIT CONTROLS */
+    .add-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 12px; padding: 8px 16px;
+      border: 1px dashed var(--border); border-radius: 8px;
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      background: transparent; cursor: pointer; font-family: var(--font-body);
+      transition: all .15s; width: 100%;
+      justify-content: center;
+    }
+    .add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+    .delete-btn {
+      display: none;
+      position: absolute; top: 10px; right: 10px;
+      width: 24px; height: 24px;
+      background: #fee2e2; color: #b91c1c;
+      border: none; border-radius: 50%; cursor: pointer;
+      font-size: 14px; align-items: center; justify-content: center;
+      font-family: var(--font-body); line-height: 1;
+    }
+    .deletable { position: relative; }
+    .deletable:hover .delete-btn { display: flex; }
+
+    /* PHOTO UPLOAD INPUT */
+    #photo-input { display: none; }
+
+    /* LINK EDITOR OVERLAY */
+    .link-edit-wrap { display: inline; }
+    .editable-link {
+      color: inherit;
+      border-bottom: 1px dashed var(--border);
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .editable-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; top: 36px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      #hero { grid-template-columns: 1fr; padding: 56px 20px 48px; }
+      .photo-wrap { width: 100px; height: 100px; }
+      .container { padding: 0 20px; }
+      .about-grid { grid-template-columns: 1fr; gap: 32px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .stat-cell { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-cell:last-child { border-bottom: none; }
+      .project-card { grid-template-columns: 1fr; }
+      .card-links { flex-direction: row; }
+      .blog-card { grid-template-columns: 1fr; }
+      .contact-card { padding: 40px 24px; }
+      footer { flex-direction: column; gap: 4px; }
+      #edit-banner { font-size: 11px; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- EDIT BANNER -->
+<div id="edit-banner">
+  <span>✏️ Edit mode — click any text to edit it directly</span>
+  <button onclick="downloadHTML()" id="save-btn">⬇ Download portfolio.html</button>
+  <button onclick="toggleEdit()">👁 Preview mode</button>
+</div>
+
+<!-- PHOTO INPUT -->
+<input type="file" id="photo-input" accept="image/*" onchange="handlePhoto(event)">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" contenteditable="true" spellcheck="false">YN</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#projects">Projects</a>
+    <a href="#blog">Blog</a>
+    <a href="#contributions">Contributions</a>
+    <a href="#contact" class="nav-cta">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div>
+    <div class="hero-badge" contenteditable="true" spellcheck="false">Available for work</div>
+    <h1 contenteditable="true" spellcheck="false">Your Name.</h1>
+    <p class="hero-bio" contenteditable="true" spellcheck="false">
+      Software developer focused on building reliable, well-crafted web applications. I write clean code, care about user experience, and ship things that work.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn btn-solid">View my work</a>
+      <a class="btn btn-ghost editable-link" onclick="editLink(this)" title="Click to edit GitHub URL" href="https://github.com/yourusername" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+  <div>
+    <div class="photo-wrap" onclick="document.getElementById('photo-input').click()" title="Click to upload your photo">
+      <div class="photo-placeholder" id="photo-placeholder">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span>Click to upload photo</span>
+      </div>
+      <img id="hero-photo" src="" alt="Profile photo" style="display:none">
+      <div class="photo-overlay">📷 Change photo</div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- STATS -->
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-num" contenteditable="true" spellcheck="false">3+</div>
+      <div class="stat-label" contenteditable="true" spellcheck="false">Years of experience</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num" contenteditable="true" spellcheck="false">12</div>
+      <div class="stat-label" contenteditable="true" spellcheck="false">Projects shipped</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num" contenteditable="true" spellcheck="false">8</div>
+      <div class="stat-label" contenteditable="true" spellcheck="false">Open source contributions</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="section">
+  <div class="container">
+    <p class="sec-eyebrow">About</p>
+    <h2 class="sec-title" contenteditable="true" spellcheck="false">A bit about me</h2>
+    <div class="about-grid">
+      <div class="about-text" contenteditable="true" spellcheck="false">
+        <p>Hi, I'm <strong>Your Name</strong>, a developer based in <strong>Your City</strong>. I enjoy solving real problems through thoughtful software — from small scripts to full-stack applications.</p>
+        <p>I care about <strong>code quality, clear documentation</strong>, and building things that are maintainable long-term. I'm comfortable working across the stack and enjoy picking up new tools when the project calls for it.</p>
+        <p>Currently open to <strong>full-time roles</strong> and freelance contracts. If you have something interesting to build, I'd love to hear about it.</p>
+      </div>
+      <div>
+        <div id="skills-container">
+          <p class="skills-group-label">Languages</p>
+          <div class="skills-wrap" id="langs-wrap">
+            <span class="skill" contenteditable="true" spellcheck="false">JavaScript</span>
+            <span class="skill" contenteditable="true" spellcheck="false">TypeScript</span>
+            <span class="skill" contenteditable="true" spellcheck="false">Python</span>
+            <span class="skill" contenteditable="true" spellcheck="false">HTML / CSS</span>
+          </div>
+          <button class="add-btn" onclick="addSkill('langs-wrap')">+ Add language</button>
+
+          <p class="skills-group-label" style="margin-top:20px">Frameworks & Tools</p>
+          <div class="skills-wrap" id="tools-wrap">
+            <span class="skill" contenteditable="true" spellcheck="false">React</span>
+            <span class="skill" contenteditable="true" spellcheck="false">Node.js</span>
+            <span class="skill" contenteditable="true" spellcheck="false">Next.js</span>
+            <span class="skill" contenteditable="true" spellcheck="false">Git</span>
+            <span class="skill" contenteditable="true" spellcheck="false">PostgreSQL</span>
+          </div>
+          <button class="add-btn" onclick="addSkill('tools-wrap')">+ Add tool</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- PROJECTS -->
+<section id="projects" class="section">
+  <div class="container">
+    <p class="sec-eyebrow">Projects</p>
+    <h2 class="sec-title" contenteditable="true" spellcheck="false">Selected work</h2>
+    <div class="card-list" id="projects-list">
+
+      <div class="project-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <div>
+          <div class="card-meta">
+            <span class="card-idx">01</span>
+            <span class="status-badge" contenteditable="true" spellcheck="false">Live</span>
+          </div>
+          <div class="card-name" contenteditable="true" spellcheck="false">Project One</div>
+          <div class="card-desc" contenteditable="true" spellcheck="false">A clear description of what this project does. What problem does it solve? Who is it for?</div>
+          <div class="card-tags">
+            <span class="tag" contenteditable="true" spellcheck="false">React</span>
+            <span class="tag" contenteditable="true" spellcheck="false">Node.js</span>
+            <span class="tag" contenteditable="true" spellcheck="false">MongoDB</span>
+            <button class="add-btn" style="width:auto;padding:3px 10px;font-size:11px;margin-top:0" onclick="addTag(this)">+ tag</button>
+          </div>
+        </div>
+        <div class="card-links">
+          <a class="icon-link editable-link" onclick="editLink(this)" href="https://github.com/yourusername/project-one" target="_blank">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.37.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            View code
+          </a>
+          <a class="icon-link editable-link" onclick="editLink(this)" href="#" target="_blank">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Live demo
+          </a>
+        </div>
+      </div>
+
+      <div class="project-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <div>
+          <div class="card-meta">
+            <span class="card-idx">02</span>
+            <span class="status-badge" contenteditable="true" spellcheck="false">Live</span>
+          </div>
+          <div class="card-name" contenteditable="true" spellcheck="false">Project Two</div>
+          <div class="card-desc" contenteditable="true" spellcheck="false">Describe this project here. What technology was interesting? What did you learn?</div>
+          <div class="card-tags">
+            <span class="tag" contenteditable="true" spellcheck="false">Python</span>
+            <span class="tag" contenteditable="true" spellcheck="false">FastAPI</span>
+            <span class="tag" contenteditable="true" spellcheck="false">PostgreSQL</span>
+            <button class="add-btn" style="width:auto;padding:3px 10px;font-size:11px;margin-top:0" onclick="addTag(this)">+ tag</button>
+          </div>
+        </div>
+        <div class="card-links">
+          <a class="icon-link editable-link" onclick="editLink(this)" href="https://github.com/yourusername/project-two" target="_blank">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.37.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            View code
+          </a>
+          <a class="icon-link editable-link" onclick="editLink(this)" href="#" target="_blank">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Live demo
+          </a>
+        </div>
+      </div>
+
+    </div>
+    <button class="add-btn" onclick="addProject()" style="margin-top:12px">+ Add project</button>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- BLOG -->
+<section id="blog" class="section">
+  <div class="container">
+    <p class="sec-eyebrow">Writing</p>
+    <h2 class="sec-title" contenteditable="true" spellcheck="false">Blog posts</h2>
+    <div class="blog-list" id="blog-list">
+
+      <div class="blog-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <div>
+          <div class="blog-date" contenteditable="true" spellcheck="false">May 2025</div>
+          <div class="blog-title" contenteditable="true" spellcheck="false">How I built my first open source library</div>
+          <div class="blog-desc" contenteditable="true" spellcheck="false">A walkthrough of the process, mistakes, and lessons learned.</div>
+        </div>
+        <a class="blog-read editable-link" onclick="editLink(this)" href="https://yourblog.com/post-1" target="_blank">
+          Read
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <div class="blog-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <div>
+          <div class="blog-date" contenteditable="true" spellcheck="false">March 2025</div>
+          <div class="blog-title" contenteditable="true" spellcheck="false">Understanding async/await in JavaScript</div>
+          <div class="blog-desc" contenteditable="true" spellcheck="false">A deep dive into asynchronous patterns and when to use them.</div>
+        </div>
+        <a class="blog-read editable-link" onclick="editLink(this)" href="https://yourblog.com/post-2" target="_blank">
+          Read
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+    </div>
+    <button class="add-btn" onclick="addBlog()" style="margin-top:12px">+ Add blog post</button>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- CONTRIBUTIONS -->
+<section id="contributions" class="section">
+  <div class="container">
+    <p class="sec-eyebrow">Open Source & Research</p>
+    <h2 class="sec-title" contenteditable="true" spellcheck="false">Patents & contributions</h2>
+    <div class="contrib-grid" id="contrib-list">
+
+      <div class="contrib-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <span class="contrib-type type-patent" contenteditable="true" spellcheck="false">Patent</span>
+        <div class="contrib-name" contenteditable="true" spellcheck="false">Your Patent Title Here</div>
+        <div class="contrib-desc" contenteditable="true" spellcheck="false">Brief description of what the patent covers and what problem it solves.</div>
+        <a class="contrib-link editable-link" onclick="editLink(this)" href="https://patents.google.com" target="_blank">
+          View patent
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <div class="contrib-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <span class="contrib-type type-oss" contenteditable="true" spellcheck="false">Open Source</span>
+        <div class="contrib-name" contenteditable="true" spellcheck="false">Contribution to Project Name</div>
+        <div class="contrib-desc" contenteditable="true" spellcheck="false">What you contributed — a feature, bug fix, documentation, or new module.</div>
+        <a class="contrib-link editable-link" onclick="editLink(this)" href="https://github.com/org/repo" target="_blank">
+          View on GitHub
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+      <div class="contrib-card deletable">
+        <button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>
+        <span class="contrib-type type-spec" contenteditable="true" spellcheck="false">Research / Spec</span>
+        <div class="contrib-name" contenteditable="true" spellcheck="false">Paper or RFC Title</div>
+        <div class="contrib-desc" contenteditable="true" spellcheck="false">Summary of what this paper or specification proposes or proves.</div>
+        <a class="contrib-link editable-link" onclick="editLink(this)" href="https://arxiv.org" target="_blank">
+          Read paper
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+
+    </div>
+    <button class="add-btn" onclick="addContrib()" style="margin-top:12px">+ Add contribution / patent</button>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- CONTACT -->
+<section id="contact" class="section">
+  <div class="container">
+    <div class="contact-card">
+      <p class="sec-eyebrow">Contact</p>
+      <h2 class="sec-title" contenteditable="true" spellcheck="false">Let's work together</h2>
+      <p class="contact-sub" contenteditable="true" spellcheck="false">Open to full-time roles, contracts, and interesting projects.</p>
+      <div class="contact-links">
+        <a class="contact-link editable-link" onclick="editLink(this)" href="mailto:you@email.com">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+          <span contenteditable="true" spellcheck="false">you@email.com</span>
+        </a>
+        <a class="contact-link editable-link" onclick="editLink(this)" href="https://github.com/yourusername" target="_blank">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.37.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a class="contact-link editable-link" onclick="editLink(this)" href="https://linkedin.com/in/yourusername" target="_blank">
+          <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.59 0 4.26 2.37 4.26 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+          LinkedIn
+        </a>
+        <a class="contact-link editable-link" onclick="editLink(this)" href="https://yourblog.com" target="_blank">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Blog
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span contenteditable="true" spellcheck="false">© 2025 Your Name</span>
+  <span contenteditable="true" spellcheck="false">yourusername.github.io</span>
+</footer>
+
+<script>
+  var editMode = true;
+  var photoDataUrl = null;
+
+  function toggleEdit() {
+    editMode = !editMode;
+    var btn = document.querySelector('#edit-banner button:last-child');
+    var banner = document.getElementById('edit-banner');
+    var els = document.querySelectorAll('[contenteditable]');
+    els.forEach(function(el) { el.contentEditable = editMode ? 'true' : 'false'; });
+    document.querySelectorAll('.add-btn, .delete-btn').forEach(function(el) {
+      el.style.display = editMode ? '' : 'none';
+    });
+    banner.style.background = editMode ? 'var(--accent)' : '#065f46';
+    btn.textContent = editMode ? '👁 Preview mode' : '✏️ Edit mode';
+    document.querySelector('#edit-banner span').textContent = editMode
+      ? '✏️ Edit mode — click any text to edit it directly'
+      : '👁 Preview mode — looking good!';
+  }
+
+  function handlePhoto(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      photoDataUrl = ev.target.result;
+      var img = document.getElementById('hero-photo');
+      var ph = document.getElementById('photo-placeholder');
+      img.src = photoDataUrl;
+      img.style.display = 'block';
+      ph.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function editLink(el) {
+    if (!editMode) return;
+    var current = el.getAttribute('href') || '';
+    var url = prompt('Enter URL:', current);
+    if (url !== null && url.trim() !== '') {
+      el.setAttribute('href', url.trim());
+    }
+  }
+
+  function addSkill(wrapperId) {
+    var wrap = document.getElementById(wrapperId);
+    var span = document.createElement('span');
+    span.className = 'skill';
+    span.contentEditable = 'true';
+    span.spellcheck = false;
+    span.textContent = 'New skill';
+    wrap.insertBefore(span, wrap.querySelector('.add-btn'));
+    span.focus();
+    var range = document.createRange();
+    range.selectNodeContents(span);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+
+  function addTag(btn) {
+    var wrap = btn.parentElement;
+    var span = document.createElement('span');
+    span.className = 'tag';
+    span.contentEditable = 'true';
+    span.spellcheck = false;
+    span.textContent = 'Tag';
+    wrap.insertBefore(span, btn);
+    span.focus();
+  }
+
+  function deleteCard(btn) {
+    if (confirm('Remove this item?')) {
+      btn.closest('.deletable').remove();
+      renumberCards();
+    }
+  }
+
+  function renumberCards() {
+    document.querySelectorAll('#projects-list .card-idx').forEach(function(el, i) {
+      el.textContent = String(i + 1).padStart(2, '0');
+    });
+  }
+
+  function addProject() {
+    var list = document.getElementById('projects-list');
+    var idx = list.querySelectorAll('.project-card').length + 1;
+    var div = document.createElement('div');
+    div.className = 'project-card deletable';
+    div.innerHTML = '<button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>'
+      + '<div>'
+      + '<div class="card-meta"><span class="card-idx">' + String(idx).padStart(2,'0') + '</span>'
+      + '<span class="status-badge" contenteditable="true" spellcheck="false">Live</span></div>'
+      + '<div class="card-name" contenteditable="true" spellcheck="false">New Project</div>'
+      + '<div class="card-desc" contenteditable="true" spellcheck="false">Describe your project here.</div>'
+      + '<div class="card-tags"><span class="tag" contenteditable="true" spellcheck="false">Tag</span>'
+      + '<button class="add-btn" style="width:auto;padding:3px 10px;font-size:11px;margin-top:0" onclick="addTag(this)">+ tag</button></div>'
+      + '</div>'
+      + '<div class="card-links">'
+      + '<a class="icon-link editable-link" onclick="editLink(this)" href="https://github.com" target="_blank"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.37.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.69.82.57C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>View code</a>'
+      + '<a class="icon-link editable-link" onclick="editLink(this)" href="#" target="_blank"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live demo</a>'
+      + '</div>';
+    list.insertBefore(div, list.querySelector('.add-btn'));
+  }
+
+  function addBlog() {
+    var list = document.getElementById('blog-list');
+    var div = document.createElement('div');
+    div.className = 'blog-card deletable';
+    div.innerHTML = '<button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>'
+      + '<div>'
+      + '<div class="blog-date" contenteditable="true" spellcheck="false">Month Year</div>'
+      + '<div class="blog-title" contenteditable="true" spellcheck="false">Your blog post title</div>'
+      + '<div class="blog-desc" contenteditable="true" spellcheck="false">A short description of the post.</div>'
+      + '</div>'
+      + '<a class="blog-read editable-link" onclick="editLink(this)" href="https://yourblog.com" target="_blank">Read <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>';
+    list.insertBefore(div, list.querySelector('.add-btn'));
+  }
+
+  function addContrib() {
+    var list = document.getElementById('contrib-list');
+    var div = document.createElement('div');
+    div.className = 'contrib-card deletable';
+    div.innerHTML = '<button class="delete-btn" onclick="deleteCard(this)" title="Remove">✕</button>'
+      + '<span class="contrib-type type-oss" contenteditable="true" spellcheck="false">Open Source</span>'
+      + '<div class="contrib-name" contenteditable="true" spellcheck="false">Contribution Title</div>'
+      + '<div class="contrib-desc" contenteditable="true" spellcheck="false">Describe your contribution here.</div>'
+      + '<a class="contrib-link editable-link" onclick="editLink(this)" href="https://github.com" target="_blank">View link <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>';
+    list.insertBefore(div, list.querySelector('.add-btn'));
+  }
+
+  function downloadHTML() {
+    var clone = document.documentElement.cloneNode(true);
+
+    // Remove edit banner
+    var banner = clone.querySelector('#edit-banner');
+    if (banner) banner.remove();
+
+    // Remove photo input
+    var pi = clone.querySelector('#photo-input');
+    if (pi) pi.remove();
+
+    // Remove all add/delete buttons
+    clone.querySelectorAll('.add-btn, .delete-btn').forEach(function(el) { el.remove(); });
+
+    // Remove edit-mode JS and styles, replace with clean version
+    clone.querySelectorAll('script').forEach(function(el) { el.remove(); });
+
+    // Remove contenteditable attributes
+    clone.querySelectorAll('[contenteditable]').forEach(function(el) {
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+    });
+
+    // Remove onclick from editable links
+    clone.querySelectorAll('.editable-link').forEach(function(el) {
+      el.removeAttribute('onclick');
+      el.classList.remove('editable-link');
+    });
+
+    // Inline photo if uploaded
+    if (photoDataUrl) {
+      var img = clone.querySelector('#hero-photo');
+      if (img) {
+        img.src = photoDataUrl;
+        img.style.display = 'block';
+      }
+      var ph = clone.querySelector('#photo-placeholder');
+      if (ph) ph.remove();
+    }
+
+    // Remove nav sticky top offset (was offset for banner)
+    var nav = clone.querySelector('nav');
+    if (nav) nav.style.top = '0';
+
+    // Add scroll reveal script back (clean, no edit mode)
+    var script = clone.ownerDocument.createElement('script');
+    script.textContent = 'var io=new IntersectionObserver(function(e){e.forEach(function(e){if(e.isIntersecting){e.target.classList.add("visible");io.unobserve(e.target)}})},{threshold:.08});document.querySelectorAll(".reveal").forEach(function(e){io.observe(e)});';
+    clone.querySelector('body').appendChild(script);
+
+    // Remove edit-mode CSS from style (keep portfolio styles)
+    clone.querySelectorAll('style').forEach(function(s) {
+      s.textContent = s.textContent
+        .replace(/#edit-banner[\s\S]*?}/g, '')
+        .replace(/\.add-btn[\s\S]*?}/g, '')
+        .replace(/\.delete-btn[\s\S]*?}/g, '')
+        .replace(/\.link-edit-wrap[\s\S]*?}/g, '')
+        .replace(/\.editable-link[\s\S]*?}/g, '')
+        .replace(/\[contenteditable[^\]]*\][\s\S]*?}/g, '')
+        .replace(/#photo-input[\s\S]*?}/g, '');
+    });
+
+    var html = '<!DOCTYPE html>\n' + clone.outerHTML;
+    var blob = new Blob([html], {type: 'text/html'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'portfolio.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // Scroll reveal
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, {threshold: .08});
+  document.querySelectorAll('.reveal').forEach(function(el) { io.observe(el); });
+</script>
+</body>
+</html>
